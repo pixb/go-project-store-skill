@@ -1,0 +1,92 @@
+{
+  "question": "How should I structure the database layer for a new Go model with proper caching and migrations?",
+  "trigger": [
+    "Adding a new model or table to the Go project",
+    "Implementing a new database driver",
+    "Creating or modifying migration files",
+    "Defining store-layer interfaces"
+  ],
+  "decision": [
+    "Choose the correct Driver→Store→Server layering order",
+    "Define Update/Find/Delete structs with pointer fields for optional updates",
+    "Set up LATEST.sql plus incremental migrations",
+    "Wire caching into the Store wrapper"
+  ],
+  "evidence": [
+    "Proto definitions for the target model",
+    "Existing store/driver.go interface signatures",
+    "Existing migration files in store/migration/"
+  ],
+  "success_measure": "New model compiles with correct CRUD methods, passes lint, and migrations apply cleanly on all three drivers",
+  "outcome": "A complete store-layer implementation for a new Go model with caching and multi-driver support",
+  "intended_users": ["Go backend developers"],
+  "input_types": ["proto definitions", "Go source code"],
+  "output_artifacts": ["store layer Go files", "migration SQL files"],
+  "use_cases": ["new model CRUD", "database migration", "cache wrapper implementation"],
+  "examples": [
+    {
+      "invocation": "/go-project-store-skill",
+      "description": "Generate store layer for a new Go model with Driver interface, Store wrapper, and migrations"
+    }
+  ],
+  "permissions_systems": ["Read local Go source files", "No network access"],
+  "typical_completion_time": "5-15 minutes",
+  "compatibility": {
+    "declared": ["opencode"],
+    "certified": []
+  },
+  "environment": {
+    "documentation_sources": ["Go project source code in the workspace"],
+    "data_sources": ["Existing store/ directory structure"],
+    "required_capabilities": ["Read Go source files", "Read/write to store/ directory"],
+    "readiness_checks": ["store/ directory exists", "driver.go defines the Driver interface"]
+  },
+  "risk": {
+    "tier": "moderate",
+    "permissions": ["Read Go source files", "Write new store/migration files"],
+    "mutation_boundary": "approval-required",
+    "approval_required": []
+  },
+  "software_mutation": {
+    "applies": true,
+    "affected_structures": ["Driver interface", "Store struct", "model structs", "migration files"],
+    "invariants": ["Driver methods match CRUD signatures", "Store wraps Driver with caching", "Migration files are valid SQL"],
+    "sources_of_truth": ["driver.go interface definitions", "store.go cache implementation"],
+    "invalid_states_prevented": ["Driver missing required CRUD methods", "Cache not invalidated on delete"],
+    "state_transitions": ["define interface", "implement driver methods", "add store wrapper", "create migrations"]
+  },
+  "data_interfaces": {
+    "applies": true,
+    "interface_types": ["database"],
+    "authoritative_sources": ["Existing store/driver.go interface", "Existing migration SQL files"],
+    "entities": ["User", "Memo", "SystemSetting"],
+    "identifiers": ["model primary key (int32 ID)"],
+    "relationships": ["Memo.creator_id -> User.id"],
+    "field_semantics": ["Timestamps are Unix int64", "RowStatus is NORMAL/ARCHIVED/DELETED"],
+    "invariants": ["Each model has Create/Update/List/Delete methods", "Update structs use pointer fields for optional fields"],
+    "freshness_and_pagination": ["List methods support Limit and offset-based pagination via Find structs"],
+    "nullability": ["Required fields are value types", "Optional fields in Update structs are pointers"],
+    "readiness_checks": ["driver.go exists and compiles", "at least one migration file exists"]
+  },
+  "semantic_recon": {
+    "applies": false
+  },
+  "semantic_contract": {
+    "applies": false
+  },
+  "routing_tests": {
+    "should_trigger": [
+      "Add a new model to the store layer",
+      "Create a new database driver implementation",
+      "Write migration SQL for a new table",
+      "Define the Driver interface for new CRUD methods"
+    ],
+    "should_not_trigger": [
+      "Implement server-side HTTP handlers",
+      "Define proto messages",
+      "Set up Docker deployment",
+      "Write unit tests for business logic"
+    ]
+  },
+  "support_tier": "supported"
+}

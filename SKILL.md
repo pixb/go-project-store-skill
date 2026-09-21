@@ -1,6 +1,22 @@
 ---
 name: go-project-store-skill
 description: Store layer patterns including Driver interface, Store wrapper with caching, migration system, and model definition patterns
+activation: /go-project-store-skill
+license: MIT
+metadata:
+  version: 1.0.0
+  author: pix
+  tags: [go, store, driver, cache, migration, database]
+  created: 2026-09-21
+  last_reviewed: 2026-09-21
+  review_interval_days: 90
+provenance:
+  maintainer: pix
+  version: 1.0.0
+  created: 2026-09-21
+  last_reviewed: 2026-09-21
+  review_interval_days: 90
+  source_references: []
 ---
 
 # Store Layer
@@ -371,6 +387,15 @@ CREATE TABLE memo_relation (
 | **RETURNING** | Get generated IDs |
 | **Migration Flow** | preMigrate -> migrateProd -> seed |
 | **Atomic Migrations** | Single transaction |
+
+## Gotchas
+
+- Proto definitions MUST exist before Store layer code — store models map to proto messages and the build will fail if protos are missing.
+- The `mode` profile field (`modeProd` vs `modeDemo`) controls whether `Migrate()` runs incremental SQL or seeds demo data. Confusing these causes data loss.
+- `LATEST.sql` is the canonical full schema for fresh installs. Incremental migrations in `0.XX/` folders are applied on top. Never edit `LATEST.sql` after release — only add new incremental files.
+- Update structs use `*string` / `*int64` pointer fields for optional updates. Passing a zero value is NOT the same as omitting it — use pointers to distinguish "set to empty" from "don't change".
+- Cache keys are stringified IDs. If your model uses a composite key, you must build a cache key string that encodes all parts, or cache lookups will silently return wrong results.
+- `embed.FS` paths are relative to the file containing the `//go:embed` directive. If you move `migrator.go`, the embedded paths break at compile time, not runtime.
 
 ## Related Skills
 
